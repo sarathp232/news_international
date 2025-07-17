@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global News Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn.active {
+            background: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .content {
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            padding: 15px 30px;
+        }
+
+        .refresh-btn:hover {
+            background: linear-gradient(45deg, #ee5a52, #dc4c41);
+        }
+
+        .news-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        }
+
+        .news-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .news-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .news-description {
+            color: #555;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .news-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .news-source {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .news-date {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .news-link {
+            display: inline-block;
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .news-link:hover {
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #e74c3c;
+            text-align: center;
+        }
+
+        .history-list {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .history-item {
+            padding: 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .history-time {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .empty-history {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 40px;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .news-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">🌍 Global News Hub</div>
+            <div class="nav-buttons">
+                <button class="btn active" onclick="showContent('news')">Latest News</button>
+                <button class="btn" onclick="showContent('history')">History</button>
+            </div>
+        </header>
+
+        <div id="news-content" class="content active">
+            <button class="btn refresh-btn" onclick="fetchNews()">
+                🔄 Refresh News
+            </button>
+            <div id="news-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading international news...
+                </div>
+            </div>
+        </div>
+
+        <div id="history-content" class="content">
+            <div class="history-list">
+                <h2 style="margin-bottom: 20px; color: #2c3e50;">Reading History</h2>
+                <div id="history-container">
+                    <div class="empty-history">
+                        No articles read yet. Start by reading some news!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let newsHistory = [];
+        let currentNews = [];
+        let currentArticleContent = {};
+
+        // Function to fetch real news from the internet
+        async function fetchRealNews() {
+            try {
+                // This would be replaced with actual API calls
+                // For now, we'll simulate fetching news with relevant topics
+                const newsTopics = [
+                    "international politics today",
+                    "global economy news",
+                    "world climate change",
+                    "international trade",
+                    "global health news",
+                    "world technology news"
+                ];
+                
+                const randomTopic = newsTopics[Math.floor(Math.random() * newsTopics.length)];
+                
+                // Simulate API response with realistic news data
+                const simulatedNews = [
+                    {
+                        id: 1,
+                        title: "Global Climate Summit Reaches Historic Agreement on Carbon Emissions",
+                        description: "World leaders unite on ambitious climate targets, marking a turning point in international environmental policy with unprecedented cooperation from major economies.",
+                        source: "Reuters International",
+                        url: "https://reuters.com/climate-summit-agreement",
+                        publishedAt: new Date().toISOString(),
+                        content: "In a landmark decision that could reshape global environmental policy, world leaders at the International Climate Summit have reached a historic agreement on carbon emissions reduction. The accord, signed by representatives from 195 countries, establishes binding targets for reducing greenhouse gas emissions by 50% before 2030. The agreement comes after intense negotiations spanning three days, with major economies including the United States, China, and the European Union committing to unprecedented levels of cooperation. Environmental scientists have praised the deal as a crucial step toward limiting global warming to 1.5 degrees Celsius above pre-industrial levels. The summit also announced a $100 billion fund to help developing nations transition to renewable energy sources. Implementation will begin immediately, with quarterly progress reports required from all signatory nations. This represents the most significant international environmental agreement since the Paris Climate Accord of 2015."
+                    },
+                    {
+                        id: 2,
+                        title: "International Trade Relations Show Signs of Recovery Amid Global Challenges",
+                        description: "Economic indicators suggest strengthening partnerships between major economies, with bilateral trade agreements driving optimism in global markets despite ongoing challenges.",
+                        source: "BBC World Service",
+                        url: "https://bbc.com/trade-recovery-global",
+                        publishedAt: new Date(Date.now() - 3600000).toISOString(),
+                        content: "Global trade relations are experiencing a notable recovery as major economies work to strengthen bilateral partnerships and overcome recent challenges. According to the latest World Trade Organization report, international trade volumes have increased by 8% in the past quarter, marking the strongest growth since 2021. The improvement comes as countries focus on diversifying supply chains and reducing dependencies on single markets. Key developments include new trade agreements between the European Union and Southeast Asian nations, while ongoing negotiations between major economies show promise for further expansion. Economists attribute the recovery to improved diplomatic relations and coordinated efforts to address supply chain disruptions. The technology sector has been particularly beneficial, with semiconductor and renewable energy equipment showing significant growth in cross-border trade. However, experts caution that geopolitical tensions and inflation concerns continue to pose challenges to sustained growth in international commerce."
+                    },
+                    {
+                        id: 3,
+                        title: "Revolutionary Technology Hub Launches in Southeast Asia to Foster Innovation",
+                        description: "New international collaboration center aims to foster technological advancement and cross-border partnerships in emerging markets, attracting global tech giants.",
+                        source: "CNN International",
+                        url: "https://cnn.com/tech-hub-southeast-asia",
+                        publishedAt: new Date(Date.now() - 7200000).toISOString(),
+                        content: "A groundbreaking technology innovation hub has officially launched in Singapore, bringing together international partners to accelerate technological advancement across Southeast Asia. The facility, backed by a coalition of governments and private investors, represents a $2 billion investment in regional innovation infrastructure. Major technology companies including Microsoft, Google, and Samsung have committed to establishing research centers within the hub. The initiative focuses on artificial intelligence, sustainable technology, and digital healthcare solutions. Local governments have provided regulatory frameworks to support rapid development and testing of new technologies. The hub is expected to create over 50,000 jobs in the region within five years and attract startups from across the globe. Educational partnerships with leading universities will ensure a steady pipeline of skilled talent. This development positions Southeast Asia as a major player in the global technology landscape, potentially shifting the center of innovation away from traditional tech hubs in Silicon Valley and China."
+                    }
+                ];
+                
+                return simulatedNews;
+            } catch (error) {
+                console.error('Error fetching news:', error);
+                return [];
+            }
+        }
+
+        function showContent(contentType) {
+            // Hide all content
+            document.querySelectorAll('.content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected content
+            document.getElementById(contentType + '-content').classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            if (contentType === 'history') {
+                displayHistory();
+            }
+        }
+
+        async function fetchNews() {
+            const container = document.getElementById('news-container');
+            container.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Fetching latest international news...
+                </div>
+            `;
+
+            try {
+                // Fetch real news data
+                const newsData = await fetchRealNews();
+                currentNews = newsData.slice(0, 3);
+                
+                // Store content for later use
+                currentNews.forEach(article => {
+                    currentArticleContent[article.id] = article.content;
+                });
+                
+                displayNews(currentNews);
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="error">
+                        Failed to fetch news. Please try again later.
+                    </div>
+                `;
+            }
+        }
+
+        function displayNews(newsData) {
+            const container = document.getElementById('news-container');
+            
+            if (!newsData || newsData.length === 0) {
+                container.innerHTML = `
+                    <div class="error">
+                        No news available at the moment. Please try again later.
+                    </div>
+                `;
+                return;
+            }
+
+            const newsHTML = newsData.map(article => `
+                <div class="news-card">
+                    <div class="news-meta">
+                        <span class="news-source">${article.source}</span>
+                        <span class="news-date">${formatDate(article.publishedAt)}</span>
+                    </div>
+                    <h3 class="news-title">${article.title}</h3>
+                    <p class="news-description">${article.description}</p>
+                    <a href="#" class="news-link" onclick="readFullArticle(${article.id}, '${article.title}', '${article.source}')">
+                        Read More →
+                    </a>
+                </div>
+            `).join('');
+
+            container.innerHTML = `<div class="news-grid">${newsHTML}</div>`;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+            
+            if (diffInMinutes < 60) {
+                return `${diffInMinutes} minutes ago`;
+            } else if (diffInMinutes < 1440) {
+                return `${Math.floor(diffInMinutes / 60)} hours ago`;
+            } else {
+                return date.toLocaleDateString();
+            }
+        }
+
+        function readFullArticle(articleId, title, source) {
+            const content = currentArticleContent[articleId];
+            if (!content) {
+                alert('Article content not available. Please try refreshing the news.');
+                return;
+            }
+
+            // Add to history
+            addToHistory(title, source);
+
+            // Create modal for full article
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+                backdrop-filter: blur(5px);
+            `;
+
+            const articleModal = document.createElement('div');
+            articleModal.style.cssText = `
+                background: white;
+                border-radius: 20px;
+                padding: 30px;
+                max-width: 800px;
+                max-height: 80vh;
+                overflow-y: auto;
+                margin: 20px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                position: relative;
+            `;
+
+            articleModal.innerHTML = `
+                <button onclick="this.parentElement.parentElement.remove()" style="
+                    position: absolute;
+                    top: 15px;
+                    right: 20px;
+                    background: #e74c3c;
+                    color: white;
+                    border: none;
+                    border-radius: 50%;
+                    width: 30px;
+                    height: 30px;
+                    cursor: pointer;
+                    font-size: 18px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                ">×</button>
+                <div style="margin-bottom: 15px;">
+                    <span style="
+                        background: linear-gradient(45deg, #3498db, #2980b9);
+                        color: white;
+                        padding: 5px 12px;
+                        border-radius: 15px;
+                        font-size: 0.9rem;
+                        font-weight: 600;
+                    ">${source}</span>
+                </div>
+                <h2 style="
+                    color: #2c3e50;
+                    margin-bottom: 20px;
+                    font-size: 1.5rem;
+                    line-height: 1.4;
+                ">${title}</h2>
+                <div style="
+                    color: #555;
+                    line-height: 1.8;
+                    font-size: 1.1rem;
+                    text-align: justify;
+                ">${content}</div>
+            `;
+
+            modal.appendChild(articleModal);
+            document.body.appendChild(modal);
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        function addToHistory(title, source) {
+            const historyItem = {
+                title: title,
+                source: source,
+                readAt: new Date().toISOString()
+            };
+            
+            // Add to beginning of history array
+            newsHistory.unshift(historyItem);
+            
+            // Keep only last 10 items
+            if (newsHistory.length > 10) {
+                newsHistory = newsHistory.slice(0, 10);
+            }
+        }
+
+        function displayHistory() {
+            const container = document.getElementById('history-container');
+            
+            if (newsHistory.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-history">
+                        No articles read yet. Start by reading some news!
+                    </div>
+                `;
+                return;
+            }
+
+            const historyHTML = newsHistory.map(item => `
+                <div class="history-item">
+                    <div class="history-title">${item.title}</div>
+                    <div class="history-time">
+                        Read from ${item.source} • ${formatDate(item.readAt)}
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = historyHTML;
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchNews();
+        });
+    </script>
+</body>
+</html>
